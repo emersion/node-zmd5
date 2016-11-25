@@ -1,0 +1,25 @@
+{
+  "name": "zmd5",
+  "version": "1.0.0",
+  "description": "A ZMD5 implementation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emersion/node-zmd5.git"
+  },
+  "keywords": [
+    "zmd5",
+    "so6",
+    "kurisu",
+    "steins;gate"
+  ],
+  "author": "emersion",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/emersion/node-zmd5/issues"
+  },
+  "homepage": "https://github.com/emersion/node-zmd5#readme"
+}
