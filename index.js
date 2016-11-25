@@ -2,6 +2,7 @@ const crypto = require('crypto')
 
 function créerPosteur(conn) {
 	conn.write('CC')
+	conn.write('Z')
 
 	const somme = crypto.createHash('md5')
 
@@ -57,17 +58,27 @@ function trouverSerrure(clef, serrure, longueur) {
 
 function créerAppliqué(conn) {
 	return new Promise((succès, erreur) => {
-		let prêt = false
+		let ccReçu = false
+		let zReçu = false
 		let clefHex = ''
 
 		conn.on('data', tampon => {
-			if (!prêt) {
+			if (!ccReçu) {
 				if (tampon.slice(0, 2).toString() == 'CC') {
-					prêt = true
+					ccReçu = true
 					tampon = tampon.slice(2)
 				} else {
 					conn.end()
 					return erreur('Message CC non reçu')
+				}
+			}
+			if (!zReçu) {
+				if (tampon.slice(0, 1).toString() == 'Z') {
+					zReçu = true
+					tampon = tampon.slice(1)
+				} else {
+					conn.end()
+					return erreur('Message Z non reçu')
 				}
 			}
 
