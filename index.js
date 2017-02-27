@@ -6,23 +6,22 @@ function créerPosteur(conn) {
 
 	const somme = crypto.createHash('md5')
 
-	somme.on('readable', () => {
-		const clef = somme.read()
-		if (!clef) {
-			return conn.emit('error', 'Impossible de créer la clef')
-		}
-
+	somme.on('data', (clef) => {
 		conn.write(clef.toString('hex'))
+		conn.end()
 	})
 
 	return somme
 }
 
-function incrémenter(serrure) {
+function incrémenter(serrure, longueur) {
 	for (let [i, v] of serrure.entries()) {
 		if (v < 255) {
 			serrure[i]++
-			return [serrure, i+1]
+			if (i >= longueur) {
+				longueur = i + 1;
+			}
+			return [serrure, longueur]
 		} else {
 			serrure[i] = 0
 		}
@@ -38,16 +37,13 @@ function trouverSerrure(clef, serrure, longueur) {
 	return new Promise((succès, erreur) => {
 		const somme = crypto.createHash('md5')
 
-		somme.on('readable', () => {
-			const clefCandidate = somme.read()
-			if (!clefCandidate) {
-				return erreur('Impossible de créer la clef candidate')
-			}
-
+		somme.on('data', (clefCandidate) => {
 			if (clefCandidate.equals(clef)) {
-				succès(serrure)
+				succès(serrure.slice(0, longueur))
 			} else {
-				trouverSerrure(clef, ...incrémenter(serrure))
+				trouverSerrure(clef, ...incrémenter(serrure, longueur))
+				.then(succès)
+				.catch(erreur)
 			}
 		})
 
@@ -69,8 +65,11 @@ function créerAppliqué(conn) {
 					tampon = tampon.slice(2)
 				} else {
 					conn.end()
-					return erreur('Message CC non reçu')
+					return erreur(new Error('Message CC non reçu'))
 				}
+			}
+			if (tampon.length == 0) {
+				return
 			}
 			if (!zReçu) {
 				if (tampon.slice(0, 1).toString() == 'Z') {
@@ -78,7 +77,7 @@ function créerAppliqué(conn) {
 					tampon = tampon.slice(1)
 				} else {
 					conn.end()
-					return erreur('Message Z non reçu')
+					return erreur(new Error('Message Z non reçu'))
 				}
 			}
 
@@ -86,12 +85,14 @@ function créerAppliqué(conn) {
 		})
 
 		conn.on('end', () => {
-			if (!prêt) {
+			if (!ccReçu || !zReçu) {
 				return
 			}
 
 			const clef = Buffer.from(clefHex, 'hex')
 			trouverSerrure(clef, Buffer.alloc(512), 0)
+			.then(succès)
+			.catch(erreur)
 		})
 	})
 }

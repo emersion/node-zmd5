@@ -4,7 +4,7 @@
   "description": "A ZMD5 implementation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test.js"
   },
   "repository": {
     "type": "git",
@@ -12,14 +12,20 @@
   },
   "keywords": [
     "zmd5",
+    "md5",
     "so6",
     "kurisu",
-    "steins;gate"
+    "steins;gate",
+    "compression"
   ],
   "author": "emersion",
   "license": "WTFPL",
   "bugs": {
     "url": "https://github.com/emersion/node-zmd5/issues"
   },
-  "homepage": "https://github.com/emersion/node-zmd5#readme"
+  "homepage": "https://github.com/emersion/node-zmd5#readme",
+  "devDependencies": {
+    "memorystream": "^0.3.1",
+    "mocha": "^3.2.0"
+  }
 }
